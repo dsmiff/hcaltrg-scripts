@@ -6,6 +6,8 @@ import argparse
 import ROOT
 
 import AlphaTwirl
+from Plotting.HistClass import HistClass
+from Plotting import cmsStyle
 
 ROOT.gROOT.SetBatch(1)
 
@@ -78,6 +80,11 @@ class Reader(object):
         self.handleHFPreRecHit = Handle("edm::SortedCollection<HFPreRecHit,edm::StrictWeakOrdering<HFPreRecHit> >")
         self.handlePFMETs = Handle("std::vector<reco::PFMET>")
 
+        self.h_photonEt = HistClass('1D', 'photonEt', bins=[100, 0, 100], store_to_file=True)
+        self.h_HFEMet   = HistClass('1D', 'HFEMet', bins=[100, 0, 100], store_to_file=True)
+        self.h_photonEt.register()
+        self.h_HFEMet.register()
+
     def _attach_to_event(self, event):
         event.run = self.run
         event.lumi = self.lumi
@@ -92,10 +99,11 @@ class Reader(object):
         print '%6d'    % self.run[0],
         print '%10d'   % self.lumi[0],
         print '%9d'    % self.eventId[0],
-        print
 
         event.getByLabel("pfMet", self.handlePFMETs)
         print self.handlePFMETs.product().front()
+
+        self.h_photonEt.fill(self.handlePFMETs.product().front().photonEt())
 
         event.getByLabel('hfprereco', self.handleHFPreRecHit)
         print self.handleHFPreRecHit.product()
@@ -103,6 +111,7 @@ class Reader(object):
     def end(self):
         self.handleHFPreRecHit = None
         self.handlePFMETs = None
+        self.h_photonEt.write()
 
 ##__________________________________________________________________||
 def loadLibraries():
