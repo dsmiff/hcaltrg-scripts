@@ -28,11 +28,12 @@ def main():
     #
     # configure scribblers
     #
-    NullCollector = AlphaTwirl.EventReader.NullCollector
+    NullCollector = AlphaTwirl.Loop.NullCollector
     reader_collector_pairs.extend([
         (Scribbler.EventAuxiliary(), NullCollector()),
         (Scribbler.MET(),            NullCollector()),
-        (Scribbler.Scratch(),        NullCollector()),
+        (Scribbler.HFPreRecHit(),    NullCollector()),
+        # (Scribbler.Scratch(),        NullCollector()),
         ])
 
     #
@@ -45,15 +46,26 @@ def main():
     Combine = AlphaTwirl.Binning.Combine
     echo = Echo(nextFunc = None)
     tblcfg = [
-        dict(branchNames = ('run', ), binnings = (echo, )),
-        dict(branchNames = ('lumi', ), binnings = (echo, )),
-        dict(branchNames = ('eventId', ), binnings = (echo, )),
-        dict(branchNames = ('pfMet', ), binnings = (Round(10, 0), )),
+        dict(keyAttrNames = ('run', ), binnings = (echo, )),
+        dict(keyAttrNames = ('lumi', ), binnings = (echo, )),
+        dict(keyAttrNames = ('eventId', ), binnings = (echo, )),
+        dict(keyAttrNames = ('pfMet', ), binnings = (Round(10, 0), )),
+        dict(
+            keyAttrNames = ('hfrechit_ieta', 'hfrechit_iphi', 'hfrechit_QIE10_index'),
+            keyIndices = ('(*)', '\\1', '\\1'),
+            binnings = (echo, echo, echo),
+            valAttrNames = ('hfrechit_QIE10_energy', ),
+            valIndices = ('\\1', ),
+            keyOutColumnNames = ('ieta', 'iphi', 'idxQIE10'),
+            valOutColumnNames = ('energy', ),
+            summaryClass = AlphaTwirl.Summary.Sum,
+            outFile = True,
+        ),
     ]
 
     # complete table configs
     tableConfigCompleter = AlphaTwirl.Configure.TableConfigCompleter(
-        defaultCountsClass = AlphaTwirl.Counter.Counts,
+        defaultSummaryClass = AlphaTwirl.Summary.Count,
         defaultOutDir = args.outdir
     )
     tblcfg = [tableConfigCompleter.complete(c) for c in tblcfg]
