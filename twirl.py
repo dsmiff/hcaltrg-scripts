@@ -32,7 +32,7 @@ def main():
     reader_collector_pairs.extend([
         (Scribbler.EventAuxiliary(), NullCollector()),
         (Scribbler.MET(),            NullCollector()),
-        # (Scribbler.Scratch(),        NullCollector()),
+        (Scribbler.Scratch(),        NullCollector()),
         ])
 
     #
